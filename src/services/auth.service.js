@@ -1,93 +1,71 @@
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const authConfig = require('../config/auth.config');
 const userService = require('./user.service');
+const tokenService = require('./token.service');
+const passwordService = require('./password.service');
 const User = require('../models/user.model');
 const AppError = require('../errors/AppError');
+const { UserDTO } = require('../dtos/user.dto');
 
 class AuthService {
     async register(userData) {
-        // Verificar si el usuario ya existe
-        const existingUser = await userService.findByEmail(userData.email);
-        if (existingUser) {
-            throw AppError.badRequest('El email ya está registrado');
-        }
-
-        // Hashear la contraseña
-        const hashedPassword = await bcrypt.hash(userData.password, authConfig.saltRounds);
-
-        // Crear el usuario con la contraseña hasheada
+        await this._validateNewUser(userData);
+        
+        const hashedPassword = await passwordService.hash(userData.password);
         const userToCreate = {
             ...userData,
             password: hashedPassword
         };
 
         const user = await userService.create(userToCreate);
-        const tokens = this._generateTokens(user);
-
-        // Eliminar la contraseña de la respuesta
-        const userResponse = { ...user };
-        delete userResponse.password;
-
-        return {
-            user: userResponse,
-            ...tokens
-        };
+        return this._createAuthResponse(user);
     }
 
     async login(email, password) {
-        // Buscar usuario por email directamente del modelo para obtener el password
+        const user = await this._validateCredentials(email, password);
+        return this._createAuthResponse(user);
+    }
+
+    async refreshToken(refreshToken) {
+        const decoded = tokenService.verifyToken(refreshToken);
+        const user = await this._validateUserExists(decoded.id);
+        return tokenService.generateTokenPair(user);
+    }
+
+    async _validateNewUser(userData) {
+        const existingUser = await userService.findByEmail(userData.email);
+        if (existingUser) {
+            throw AppError.badRequest('El email ya está registrado');
+        }
+    }
+
+    async _validateCredentials(email, password) {
         const user = await User.findOne({ email: email.toLowerCase() });
         if (!user) {
             throw AppError.unauthorized('Credenciales inválidas');
         }
 
-        // Verificar contraseña
-        const isValidPassword = await bcrypt.compare(password, user.password);
+        const isValidPassword = await passwordService.verify(password, user.password);
         if (!isValidPassword) {
             throw AppError.unauthorized('Credenciales inválidas');
         }
 
-        const tokens = this._generateTokens(user);
-
-        // Obtener usuario sin password usando el servicio
-        const userResponse = await userService.findByEmail(email);
-
-        return {
-            user: userResponse,
-            ...tokens
-        };
+        return user;
     }
 
-    async refreshToken(refreshToken) {
-        try {
-            // Verificar refresh token
-            const decoded = jwt.verify(refreshToken, authConfig.secret);
-            
-            // Buscar usuario
-            const user = await userService.getById(decoded.id);
-            if (!user) {
-                throw AppError.unauthorized('Usuario no encontrado');
-            }
-
-            // Generar nuevos tokens
-            const tokens = this._generateTokens(user);
-
-            return tokens;
-        } catch (error) {
-            throw AppError.unauthorized('Token inválido o expirado');
+    async _validateUserExists(userId) {
+        const user = await userService.getById(userId);
+        if (!user) {
+            throw AppError.unauthorized('Usuario no encontrado');
         }
+        return user;
     }
 
-    _generateTokens(user) {
-        const payload = {
-            id: user._id || user.id, // Manejar ambos casos
-            email: user.email
-        };
+    _createAuthResponse(user) {
+        const userDTO = new UserDTO(user);
+        const tokens = tokenService.generateTokenPair(user);
 
         return {
-            accessToken: jwt.sign(payload, authConfig.secret, { expiresIn: authConfig.expiresIn }),
-            refreshToken: jwt.sign(payload, authConfig.secret, { expiresIn: authConfig.refreshExpiresIn })
+            user: userDTO,
+            ...tokens
         };
     }
 }

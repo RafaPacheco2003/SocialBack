@@ -42,14 +42,11 @@ class UserService {
 
     /**
      * Crea un nuevo usuario
-     * @param {Object} userData - Datos del usuario a crear
+     * @param {Object} userModel - Datos del usuario a crear
      * @returns {Promise<Object>} Usuario creado
      */
-    async create(userData) {
-        const createDTO = new CreateUserDTO(userData);
-        const userModel = UserMapper.toModel(createDTO);
-        const createdUser = await userRepository.create(userModel);
-        return UserMapper.toDTO(createdUser);
+    async create(userModel) {
+        return await userRepository.create(userModel);
     }
 
     /**
@@ -58,16 +55,8 @@ class UserService {
      * @param {Object} userData - Datos a actualizar
      * @returns {Promise<Object>} Usuario actualizado
      */
-    async update(id, userData) {
-        const updateDTO = new UpdateUserDTO(userData);
-        const userModel = UserMapper.toModelForUpdate(updateDTO);
-        const updatedUser = await userRepository.update(id, userModel);
-        
-        if (!updatedUser) {
-            throw AppError.notFound('Usuario no encontrado');
-        }
-        
-        return UserMapper.toDTO(updatedUser);
+    async update(id, userModel) {
+        return await userRepository.update(id, userModel);
     }
 
     /**

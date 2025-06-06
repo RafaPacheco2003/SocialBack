@@ -16,10 +16,7 @@ class CommentController {
         const commentModel= CommentMapper.toModel(req);
         const comments= await CommentService.getComments(commentModel);
         const responseDTO= CommentMapper.toDTOList(comments);
-        res.status(StatusCodes.OK).json({
-            status: 'success',
-            data: responseDTO
-        });
+        res.status(StatusCodes.OK).json(responseDTO);
     }
 
     /**
@@ -28,10 +25,8 @@ class CommentController {
     async getById(req, res, next) {
         
             const comment = await CommentService.getCommentById(req.params.id);
-            res.status(StatusCodes.OK).json({
-                status: 'success',
-                data: comment
-            });
+            const responseDTO = CommentMapper.toDTO(comment);
+            res.status(StatusCodes.OK).json(responseDTO);
        
     }
 
@@ -41,10 +36,8 @@ class CommentController {
     async getByPost(req, res, next) {
         
             const comments = await CommentService.getCommentsByPost(req.params.postId);
-            res.status(StatusCodes.OK).json({
-                status: 'success',
-                data: comments
-            });
+            const responseDTO = CommentMapper.toDTOList(comments);
+            res.status(StatusCodes.OK).json(responseDTO);
         
     }
 
@@ -54,10 +47,8 @@ class CommentController {
     async create(req, res, next) {
        
             const newComment = await CommentService.createComment(req.body);
-            res.status(StatusCodes.CREATED).json({
-                status: 'success',
-                data: newComment
-            });
+            const responseDTO = CommentMapper.toDTO(newComment);
+            res.status(StatusCodes.CREATED).json(responseDTO);
        
     }
 
@@ -67,10 +58,8 @@ class CommentController {
     async update(req, res, next) {
         
             const updatedComment = await CommentService.updateComment(req.params.id, req.body);
-            res.status(StatusCodes.OK).json({
-                status: 'success',
-                data: updatedComment
-            });
+            const responseDTO = CommentMapper.toDTO(updatedComment);
+            res.status(StatusCodes.OK).json(responseDTO);
         
     }
 
@@ -80,10 +69,7 @@ class CommentController {
     async delete(req, res, next) {
         
             await CommentService.deleteComment(req.params.id);
-            res.status(StatusCodes.OK).json({
-                status: 'success',
-                message: 'Comentario eliminado correctamente'
-            });
+            res.status(StatusCodes.OK).json({ message: 'Comentario eliminado correctamente' });
         
     }
 }

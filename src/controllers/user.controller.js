@@ -39,12 +39,10 @@ class UserController {
      * @param {Object} res - Objeto de respuesta de Express
      */
     async create(req, res) {
-        try {
-            const newUser = await UserService.create(req.body);
-            res.status(201).json(newUser);
-        } catch (error) {
-            res.status(400).json({ error: error.message });
-        }
+        const userModel = UserMapper.toModel(req.body);
+        const newUser = await UserService.create(userModel);
+        const responseDTO = UserMapper.toDTO(newUser);
+        res.status(201).json(responseDTO);
     }
 
     /**

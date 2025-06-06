@@ -4,79 +4,56 @@ const PostMapper = require('../mappers/post.mapper');
 
 class PostController {
     async createPost(req, res, next) {
-        try {
-            const postData = JSON.parse(req.body.data);
-            const post = await PostService.createPostWithImages(postData, req.files);
-            res.status(201).json(post);
-        } catch (error) {
-            next(error);
-        }
+
+        const postData = JSON.parse(req.body.data);
+        const postModel = PostMapper.toModel(postData);
+        const postWithImages = await PostService.createPostWithImages(postModel, req.files);
+        const responseDTO = PostMapper.toDTO(postWithImages);
+        res.status(201).json(responseDTO);
+
     }
 
     async getPost(req, res) {
-        try {
-            const post = await PostService.getPostById(req.params.id);
-            const responseDTO = PostMapper.toDTO(post);
-            res.json(responseDTO);
-        } catch (error) {
-            res.status(404).json({ error: error.message });
-        }
+        const post = await PostService.getPostById(req.params.id);
+        const responseDTO = PostMapper.toDTO(post);
+        res.json(responseDTO);
     }
 
     async getPostsByAuthor(req, res, next) {
-        try {
-            const posts = await PostService.getPostsByAuthor(req.params.authorId);
-            res.json(posts);
-        } catch (error) {
-            next(error);
-        }
+        const posts = await PostService.getPostsByAuthor(req.params.authorId);
+        const responseDTO = PostMapper.toDTOList(posts);
+        res.json(responseDTO);
     }
 
     async getAllPosts(req, res) {
-        try {
-            const { page = 1, limit = 10 } = req.query;
-            const paginatedPosts = await PostService.getPosts({ page, limit });
-            const responseDTO = PostMapper.toPaginatedDTO(paginatedPosts);
-            res.json(responseDTO);
-        } catch (error) {
-            res.status(400).json({ error: error.message });
-        }
+        const { page = 1, limit = 10 } = req.query;
+        const paginatedPosts = await PostService.getPosts({ page, limit });
+        const responseDTO = PostMapper.toPaginatedDTO(paginatedPosts);
+        res.json(responseDTO);
     }
 
     async getPostById(req, res, next) {
-        try {
-            const post = await PostService.getPostById(req.params.id);
-            res.json(post);
-        } catch (error) {
-            next(error);
-        }
+        const post = await PostService.getPostById(req.params.id);
+        const responseDTO = PostMapper.toDTO(post);
+        res.json(responseDTO);
     }
 
     async updatePost(req, res, next) {
-        try {
-            const post = await PostService.updatePost(req.params.id, req.body);
-            res.json(post);
-        } catch (error) {
-            next(error);
-        }
+        const postModel = PostMapper.toModel(req.body);
+        const updatedPost = await PostService.updatePost(req.params.id, postModel);
+        const responseDTO = PostMapper.toDTO(updatedPost);
+        res.json(responseDTO);
     }
 
     async deletePost(req, res, next) {
-        try {
-            await PostService.deletePost(req.params.id);
-            res.status(204).send();
-        } catch (error) {
-            next(error);
-        }
+        await PostService.deletePost(req.params.id);
+        res.status(204).send();
     }
 
     async getPosts(req, res, next) {
-        try {
-            const posts = await PostService.getPosts(req.query);
-            res.json(posts);
-        } catch (error) {
-            next(error);
-        }
+        const posts = await PostService.getPosts(req.query);
+        const responseDTO = PostMapper.toDTOList(posts);
+        res.json(responseDTO);
     }
 }
 

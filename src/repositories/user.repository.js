@@ -10,8 +10,7 @@ class UserRepository {
      * @returns {Promise<UserDTO>} Usuario creado
      */
     async create(userData) {
-        const user = new User(userData);
-        return await user.save();
+        return await User.create(userData);
     }
 
     /**
@@ -20,25 +19,9 @@ class UserRepository {
      * @returns {Promise<Object>} Lista paginada de usuarios
      */
     async findAll(options = {}) {
-        const { page = 1, limit = 10, search = '', isActive = true } = options;
-        
-        const query = {
-            isActive,
-            ...(search && {
-            $or: [
-                { firstName: { $regex: search, $options: 'i' } },
-                { lastName: { $regex: search, $options: 'i' } },
-                { email: { $regex: search, $options: 'i' } }
-            ]
-            })
-        };
-
-        return await User.paginate(query, {
-            page: parseInt(page),
-            limit: parseInt(limit),
-            sort: { createdAt: -1 },
-            populate: ['posts', 'comments']
-        });
+        return await User.find()
+        .populate('posts')
+        .populate('comments');
     }
 
     /**

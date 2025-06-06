@@ -1,0 +1,25 @@
+### Variables
+@baseUrl = http://localhost:3000/api
+@postId = 65f3c8d7e85b1234567890ab
+@authorId = 65f3c8d7e85b1234567890ab
+
+### Crear un nuevo post
+POST {{baseUrl}}/posts
+Content-Type: application/json
+
+{
+    "description": "Este es un post de prueba",
+    "author": "{{authorId}}"
+}
+
+### Obtener todos los posts
+GET {{baseUrl}}/posts
+
+### Obtener todos los posts con paginación
+GET {{baseUrl}}/posts?page=1&limit=10
+
+### Obtener un post específico por ID
+GET {{baseUrl}}/posts/{{postId}}
+
+### Obtener posts de un autor específico
+GET {{baseUrl}}/posts/author/{{authorId}} 

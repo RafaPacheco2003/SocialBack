@@ -1,0 +1,35 @@
+### Variables
+@baseUrl = http://localhost:3000/api
+@commentId = 65f3c8d7e85b1234567890ef
+@postId = 65f3c8d7e85b1234567890cd
+@authorId = 65f3c8d7e85b1234567890ab
+
+### Crear un nuevo comentario
+POST {{baseUrl}}/comments
+Content-Type: application/json
+
+{
+    "content": "Este es un comentario de prueba",
+    "author": "{{authorId}}",
+    "post": "{{postId}}"
+}
+
+### Obtener comentarios de un post específico
+GET {{baseUrl}}/comments/post/{{postId}}
+
+### Obtener un comentario por ID
+GET {{baseUrl}}/comments/{{commentId}}
+
+### Actualizar un comentario
+PUT {{baseUrl}}/comments/{{commentId}}
+Content-Type: application/json
+
+{
+    "content": "Contenido actualizado del comentario"
+}
+
+### Eliminar un comentario
+DELETE {{baseUrl}}/comments/{{commentId}}
+
+### Obtener todos los comentarios (con paginación)
+GET {{baseUrl}}/comments?page=1&limit=10 

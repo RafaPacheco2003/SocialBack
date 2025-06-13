@@ -30,7 +30,7 @@ const verifyToken = (req, res, next) => {
                 throw AppError.unauthorized('Invalid token');
             }
 
-            req.userId = decoded.id;
+            req.user = { id: decoded.id };
             next();
         });
     } catch (error) {

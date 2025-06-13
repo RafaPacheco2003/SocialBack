@@ -18,11 +18,14 @@ class UserRepository {
      * @param {Object} params - Parámetros de búsqueda y paginación
      * @returns {Promise<Object>} Lista paginada de usuarios
      */
-    async findAll(options = {}) {
-        return await User.find()
-        .populate('posts')
-        .populate('comments');
-    }
+    async findAll({ page = 1, limit = 10 } = {}) {
+    return await User.paginate({}, {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        populate: ['posts', 'comments']
+    });
+}
+
 
     /**
      * Encuentra un usuario por su ID

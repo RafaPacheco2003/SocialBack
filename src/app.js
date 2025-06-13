@@ -8,8 +8,11 @@ const userRoutes = require('./routes/userRoutes');
 const postRoutes = require('./routes/postRoutes');
 const commentRoutes = require('./routes/commentRoutes');
 const authRoutes = require('./routes/authRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 const errorHandler = require('./middlewares/error.middleware');
 const imgRoutes = require('./routes/imgRoutes');
+const socketService = require('./services/socket.service');
+
 // Inicializar express
 const app = express();
 
@@ -58,6 +61,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/chats', chatRoutes);
 
 // Ruta de estado de la API
 app.get('/api/health', (req, res) => {
@@ -98,6 +102,9 @@ Servidor corriendo en http://localhost:${PORT}
 API docs disponible en http://localhost:${PORT}/api/docs
     `);
 });
+
+// Inicializar WebSocket
+socketService.initialize(server);
 
 // Manejo de errores del servidor
 server.on('error', (err) => {

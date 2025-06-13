@@ -25,9 +25,11 @@
     "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.0.3",
+    "mongoose-autopopulate": "^1.1.0",
     "mongoose-paginate-v2": "^1.7.4",
     "morgan": "^1.10.0",
     "multer": "^2.0.1",
+    "socket.io": "^4.8.1",
     "user-api": "file:",
     "uuid": "^9.0.1"
   },

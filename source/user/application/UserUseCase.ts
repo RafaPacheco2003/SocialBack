@@ -1,6 +1,7 @@
 import { UserValue } from "../domain/user-value";
 import { UserRepository } from "../domain/user-repository";
 import { UserEntity } from "../domain/user-entity";
+import { SendEmailService } from "./service/SendEmail";
 import { 
     UserNotFoundError, 
     UserAlreadyExistsError, 
@@ -9,7 +10,10 @@ import {
 } from "../domain/exceptions/user.exceptions";
 
 export class UserUseCase {
-    constructor(private userRepository: UserRepository) {}
+    constructor(
+        private userRepository: UserRepository,
+        private sendEmailService: SendEmailService
+    ) {}
 
     public async getUserById(uuid: string): Promise<UserEntity | null> {
         const user = await this.userRepository.findById(uuid);
@@ -39,7 +43,19 @@ export class UserUseCase {
             userEntity.password
         );
 
-        return await this.userRepository.create(newUserValue);
+        const createdUser = await this.userRepository.create(newUserValue);
+
+        // Enviar email de bienvenida después de crear el usuario
+        try {
+            const fullName = `${createdUser.firstName} ${createdUser.lastName}`;
+            await this.sendEmailService.sendWelcomeEmail(createdUser.email, fullName);
+            console.log(`Email de bienvenida enviado a ${createdUser.email}`);
+        } catch (error) {
+            console.error('Error enviando email de bienvenida:', error);
+            // No fallar la creación del usuario si el email falla
+        }
+
+        return createdUser;
     }
 
     public async updateUser(

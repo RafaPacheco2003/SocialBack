@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { MongoRepository } from "../repository/MongoRepository";
 import { UserUseCase } from "../../application/UserUseCase";
+import { SendEmailService } from "../../application/service/SendEmail";
 import { UserController } from "../controller/UserController";
 import { 
     createUserValidation, 
@@ -15,7 +16,8 @@ const route = Router();
 
 // Inicializar dependencias siguiendo el principio de inyección de dependencias
 const mongoRepository = new MongoRepository();
-const userUseCase = new UserUseCase(mongoRepository);
+const sendEmailService = new SendEmailService();
+const userUseCase = new UserUseCase(mongoRepository, sendEmailService);
 const userCtrl = new UserController(userUseCase);
 
 // Definir rutas y vincular con los métodos del controlador

@@ -24,16 +24,13 @@ export class UserUseCase {
             throw new Error('User with this email already exists');
         }
 
-        // Crear nueva entidad de usuario usando los datos de la entidad recibida
-        const newUserValue = new UserValue(
-            null, // UUID se generará automáticamente
+        // Crear nuevo usuario usando el factory method
+        const newUserValue = UserValue.createNew(
             userEntity.firstName,
             userEntity.lastName,
             userEntity.phoneNumber,
             userEntity.email,
-            userEntity.password,
-            new Date(), // Fecha de creación
-            userEntity.isActive
+            userEntity.password
         );
 
         return await this.userRepository.create(newUserValue);
@@ -41,7 +38,7 @@ export class UserUseCase {
 
     public async updateUser(
         uuid: string,
-        userEntityUpdates: Partial<UserEntity>
+        userEntityUpdates: Partial<Pick<UserEntity, 'firstName' | 'lastName' | 'phoneNumber' | 'email' | 'password'>>
     ): Promise<UserEntity> {
         const existingUser = await this.userRepository.findById(uuid);
         if (!existingUser) {
@@ -56,22 +53,8 @@ export class UserUseCase {
             }
         }
 
-        // Crear nueva entidad con los datos actualizados
-        const updatedUserValue = new UserValue(
-            existingUser.uuid,
-            userEntityUpdates.firstName || existingUser.firstName,
-            userEntityUpdates.lastName || existingUser.lastName,
-            userEntityUpdates.phoneNumber || existingUser.phoneNumber,
-            userEntityUpdates.email || existingUser.email,
-            userEntityUpdates.password || existingUser.password,
-            existingUser.createdAt,
-            userEntityUpdates.isActive !== undefined ? userEntityUpdates.isActive : existingUser.isActive
-        );
-
-        // Preservar lastLogin si existe
-        if (existingUser.lastLogin) {
-            updatedUserValue.lastLogin = existingUser.lastLogin;
-        }
+        // Usar el factory method para actualizaciones generales
+        const updatedUserValue = UserValue.update(existingUser, userEntityUpdates);
 
         return await this.userRepository.update(updatedUserValue);
     }
@@ -102,19 +85,8 @@ export class UserUseCase {
             throw new Error('Cannot update login for inactive user');
         }
 
-        // Crear nueva entidad con el último login actualizado
-        const updatedUserValue = new UserValue(
-            existingUser.uuid,
-            existingUser.firstName,
-            existingUser.lastName,
-            existingUser.phoneNumber,
-            existingUser.email,
-            existingUser.password,
-            existingUser.createdAt,
-            existingUser.isActive
-        );
-
-        updatedUserValue.lastLogin = new Date();
+        // Usar el factory method para actualizar solo lastLogin
+        const updatedUserValue = UserValue.updateLastLogin(existingUser);
 
         return await this.userRepository.update(updatedUserValue);
     }
@@ -128,7 +100,46 @@ export class UserUseCase {
             throw new Error('User not found');
         }
 
-        return await this.updateUser(uuid, { isActive: !existingUser.isActive });
+        // Usar el factory method apropiado según el estado actual
+        const updatedUserValue = existingUser.isActive 
+            ? UserValue.deactivate(existingUser)
+            : UserValue.activate(existingUser);
+
+        return await this.userRepository.update(updatedUserValue);
+    }
+
+    /**
+     * Activar usuario específicamente
+     */
+    public async activateUser(uuid: string): Promise<UserEntity> {
+        const existingUser = await this.userRepository.findById(uuid);
+        if (!existingUser) {
+            throw new Error('User not found');
+        }
+
+        if (existingUser.isActive) {
+            throw new Error('User is already active');
+        }
+
+        const activatedUserValue = UserValue.activate(existingUser);
+        return await this.userRepository.update(activatedUserValue);
+    }
+
+    /**
+     * Desactivar usuario específicamente
+     */
+    public async deactivateUser(uuid: string): Promise<UserEntity> {
+        const existingUser = await this.userRepository.findById(uuid);
+        if (!existingUser) {
+            throw new Error('User not found');
+        }
+
+        if (!existingUser.isActive) {
+            throw new Error('User is already inactive');
+        }
+
+        const deactivatedUserValue = UserValue.deactivate(existingUser);
+        return await this.userRepository.update(deactivatedUserValue);
     }
 
     /**

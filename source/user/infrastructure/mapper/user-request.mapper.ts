@@ -26,28 +26,24 @@ export class UserRequestMapper {
 
     /**
      * Convierte un CreateUserRequestDto a UserEntity
-     * Seguimos el principio de Clean Architecture creando la entidad en la capa de infraestructura
+     * Usa el factory method para crear nuevos usuarios
      */
     static toUserEntity(requestDto: CreateUserRequestDto): UserEntity {
-        const userValue = new UserValue(
-            null, // UUID será generado
+        return UserValue.createNew(
             requestDto.firstName,
             requestDto.lastName,
             requestDto.phoneNumber,
             requestDto.email,
-            requestDto.password,
-            new Date(),
-            true // Por defecto activo
+            requestDto.password
         );
-
-        return userValue;
     }
 
     /**
      * Convierte un UpdateUserRequestDto a Partial<UserEntity>
+     * Excluye isActive ya que debe ser manejado por métodos específicos
      */
-    static toPartialUserEntity(requestDto: UpdateUserRequestDto): Partial<UserEntity> {
-        const updates: Partial<UserEntity> = {};
+    static toPartialUserEntity(requestDto: UpdateUserRequestDto): Partial<Pick<UserEntity, 'firstName' | 'lastName' | 'phoneNumber' | 'email' | 'password'>> {
+        const updates: Partial<Pick<UserEntity, 'firstName' | 'lastName' | 'phoneNumber' | 'email' | 'password'>> = {};
 
         if (requestDto.firstName !== undefined) {
             updates.firstName = requestDto.firstName;
@@ -64,9 +60,7 @@ export class UserRequestMapper {
         if (requestDto.password !== undefined) {
             updates.password = requestDto.password;
         }
-        if (requestDto.isActive !== undefined) {
-            updates.isActive = requestDto.isActive;
-        }
+        // isActive se excluye - debe ser manejado por activateUser/deactivateUser
 
         return updates;
     }

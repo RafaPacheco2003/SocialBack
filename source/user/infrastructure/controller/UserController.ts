@@ -123,6 +123,30 @@ export class UserController {
     };
 
     /**
+     * Activar usuario específicamente
+     */
+    public activateUser = async (req: Request, res: Response): Promise<Response> => {
+        const { uuid } = req.params;
+        
+        const user = await this.userUseCase.activateUser(uuid);
+        const responseDto = UserResponseMapper.toUserResponseDto(user);
+        
+        return res.status(200).json(responseDto);
+    };
+
+    /**
+     * Desactivar usuario específicamente
+     */
+    public deactivateUser = async (req: Request, res: Response): Promise<Response> => {
+        const { uuid } = req.params;
+        
+        const user = await this.userUseCase.deactivateUser(uuid);
+        const responseDto = UserResponseMapper.toUserResponseDto(user);
+        
+        return res.status(200).json(responseDto);
+    };
+
+    /**
      * Verificar si usuario existe por email
      */
     public checkUserExistsByEmail = async (req: Request, res: Response): Promise<Response> => {

@@ -27,6 +27,8 @@ route.delete("/:uuid", deleteUserValidation, handleValidationErrors, (req: Reque
 // Nuevas rutas adicionales
 route.patch("/:uuid/last-login", getUserByIdValidation, handleValidationErrors, (req: Request, res: Response) => userCtrl.updateLastLogin(req, res));
 route.patch("/:uuid/toggle-status", getUserByIdValidation, handleValidationErrors, (req: Request, res: Response) => userCtrl.toggleUserStatus(req, res));
+route.patch("/:uuid/activate", getUserByIdValidation, handleValidationErrors, (req: Request, res: Response) => userCtrl.activateUser(req, res));
+route.patch("/:uuid/deactivate", getUserByIdValidation, handleValidationErrors, (req: Request, res: Response) => userCtrl.deactivateUser(req, res));
 route.get("/check/email/:email", (req: Request, res: Response) => userCtrl.checkUserExistsByEmail(req, res));
 route.get("/check/id/:uuid", getUserByIdValidation, handleValidationErrors, (req: Request, res: Response) => userCtrl.checkUserExistsById(req, res));
 

@@ -1,38 +1,76 @@
-import { Router, Request, Response } from "express";
+import { Router } from "express";
 import { MongoRepository } from "../repository/MongoRepository";
 import { UserUseCase } from "../../application/UserUseCase";
 import { SendEmailService } from "../../application/service/SendEmail";
 import { UserController } from "../controller/UserController";
-import { 
-    createUserValidation, 
-    updateUserValidation, 
-    getUserByIdValidation, 
-    deleteUserValidation 
+import {
+  createUserValidation,
+  updateUserValidation,
+  getUserByIdValidation,
+  deleteUserValidation,
 } from "../validation/user.validation";
-import { handleValidationErrors } from "../middleware/validation.middleware";
 import { asyncHandler } from "../middleware/exception-handler.middleware";
 
 const route = Router();
 
-// Inicializar dependencias siguiendo el principio de inyección de dependencias
-const mongoRepository = new MongoRepository();
-const sendEmailService = new SendEmailService();
-const userUseCase = new UserUseCase(mongoRepository, sendEmailService);
-const userCtrl = new UserController(userUseCase);
+const userController = new UserController(
+  new UserUseCase(new MongoRepository(), new SendEmailService())
+);
 
-// Definir rutas y vincular con los métodos del controlador
-route.post("/register", createUserValidation, handleValidationErrors, asyncHandler((req: Request, res: Response) => userCtrl.registerUser(req, res)));
-route.get("/", asyncHandler((req: Request, res: Response) => userCtrl.getAllUsers(req, res)));
-route.get("/:uuid", getUserByIdValidation, handleValidationErrors, asyncHandler((req: Request, res: Response) => userCtrl.getUserById(req, res)));
-route.put("/:uuid", updateUserValidation, handleValidationErrors, asyncHandler((req: Request, res: Response) => userCtrl.updateUser(req, res)));
-route.delete("/:uuid", deleteUserValidation, handleValidationErrors, asyncHandler((req: Request, res: Response) => userCtrl.deleteUser(req, res)));
+route.post(
+  "/register",
+  createUserValidation,
+  asyncHandler(userController.registerUser)
+);
 
-// Nuevas rutas adicionales
-route.patch("/:uuid/last-login", getUserByIdValidation, handleValidationErrors, asyncHandler((req: Request, res: Response) => userCtrl.updateLastLogin(req, res)));
-route.patch("/:uuid/toggle-status", getUserByIdValidation, handleValidationErrors, asyncHandler((req: Request, res: Response) => userCtrl.toggleUserStatus(req, res)));
-route.patch("/:uuid/activate", getUserByIdValidation, handleValidationErrors, asyncHandler((req: Request, res: Response) => userCtrl.activateUser(req, res)));
-route.patch("/:uuid/deactivate", getUserByIdValidation, handleValidationErrors, asyncHandler((req: Request, res: Response) => userCtrl.deactivateUser(req, res)));
-route.get("/check/email/:email", asyncHandler((req: Request, res: Response) => userCtrl.checkUserExistsByEmail(req, res)));
-route.get("/check/id/:uuid", getUserByIdValidation, handleValidationErrors, asyncHandler((req: Request, res: Response) => userCtrl.checkUserExistsById(req, res)));
+route.get("/", asyncHandler(userController.getAllUsers));
+
+route.get(
+  "/:uuid",
+  getUserByIdValidation,
+  asyncHandler(userController.getUserById)
+);
+
+route.put(
+  "/:uuid",
+  updateUserValidation,
+  asyncHandler(userController.updateUser)
+);
+
+route.delete(
+  "/:uuid",
+  deleteUserValidation,
+  asyncHandler(userController.deleteUser)
+);
+
+route.patch(
+  "/:uuid/last-login",
+  getUserByIdValidation,
+  asyncHandler(userController.updateLastLogin)
+);
+
+route.patch(
+  "/:uuid/toggle-status",
+  getUserByIdValidation,
+  asyncHandler(userController.toggleUserStatus)
+);
+
+route.patch(
+  "/:uuid/activate",
+  getUserByIdValidation,
+  asyncHandler(userController.activateUser)
+);
+
+route.patch(
+  "/:uuid/deactivate",
+  getUserByIdValidation,
+  asyncHandler(userController.deactivateUser)
+);
+
+route.get(
+  "/check/id/:uuid",
+  getUserByIdValidation,
+  asyncHandler(userController.checkUserExistsById)
+);
 
 export default route;

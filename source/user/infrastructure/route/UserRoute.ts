@@ -24,4 +24,10 @@ route.get("/:uuid", getUserByIdValidation, handleValidationErrors, (req: Request
 route.put("/:uuid", updateUserValidation, handleValidationErrors, (req: Request, res: Response) => userCtrl.updateUser(req, res));
 route.delete("/:uuid", deleteUserValidation, handleValidationErrors, (req: Request, res: Response) => userCtrl.deleteUser(req, res));
 
+// Nuevas rutas adicionales
+route.patch("/:uuid/last-login", getUserByIdValidation, handleValidationErrors, (req: Request, res: Response) => userCtrl.updateLastLogin(req, res));
+route.patch("/:uuid/toggle-status", getUserByIdValidation, handleValidationErrors, (req: Request, res: Response) => userCtrl.toggleUserStatus(req, res));
+route.get("/check/email/:email", (req: Request, res: Response) => userCtrl.checkUserExistsByEmail(req, res));
+route.get("/check/id/:uuid", getUserByIdValidation, handleValidationErrors, (req: Request, res: Response) => userCtrl.checkUserExistsById(req, res));
+
 export default route;

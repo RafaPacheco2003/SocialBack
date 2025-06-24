@@ -2,13 +2,15 @@
   "name": "user-api",
   "version": "1.0.0",
   "description": "API de usuarios con Express y MongoDB",
-  "main": "src/app.js",
+  "main": "source/user/app.ts",
+  "type": "commonjs",
   "scripts": {
-    "start": "node src/app.js",
-    "dev": "nodemon src/app.js",
-    "lint": "eslint src/",
-    "test": "jest",
-    "debug": "nodemon --inspect src/app.js"
+    "clean": "rm -rf dist",
+    "build": "tsc",
+    "start": "ts-node source/user/app.ts",
+    "dev": "ts-node-dev --respawn source/user/app.ts",
+    "lint": "eslint source/",
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
@@ -30,15 +32,21 @@
     "morgan": "^1.10.0",
     "multer": "^2.0.1",
     "socket.io": "^4.8.1",
-    "user-api": "file:",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@types/compression": "^1.7.2",
+    "@types/cors": "^2.8.13",
     "@types/express": "^4.17.21",
+    "@types/morgan": "^1.9.4",
+    "@types/node": "^20.3.1",
     "@types/uuid": "^9.0.7",
     "eslint": "^8.55.0",
     "jest": "^29.7.0",
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.0.2",
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.0.4"
   },
   "engines": {
     "node": ">=14.0.0"

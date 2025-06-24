@@ -1,6 +1,12 @@
 import { UserValue } from "../domain/user-value";
 import { UserRepository } from "../domain/user-repository";
 import { UserEntity } from "../domain/user-entity";
+import { 
+    UserNotFoundError, 
+    UserAlreadyExistsError, 
+    UserInactiveError, 
+    InvalidUserStateError 
+} from "../domain/exceptions/user.exceptions";
 
 export class UserUseCase {
     constructor(private userRepository: UserRepository) {}
@@ -21,7 +27,7 @@ export class UserUseCase {
         // Verificar si el usuario ya existe por email
         const existingUser = await this.userRepository.findByEmail(userEntity.email);
         if (existingUser) {
-            throw new Error('User with this email already exists');
+            throw new UserAlreadyExistsError(userEntity.email);
         }
 
         // Crear nuevo usuario usando el factory method
@@ -42,14 +48,14 @@ export class UserUseCase {
     ): Promise<UserEntity> {
         const existingUser = await this.userRepository.findById(uuid);
         if (!existingUser) {
-            throw new Error('User not found');
+            throw new UserNotFoundError(uuid);
         }
 
         // Si se está actualizando el email, verificar que no exista otro usuario con ese email
         if (userEntityUpdates.email && userEntityUpdates.email !== existingUser.email) {
             const userWithEmail = await this.userRepository.findByEmail(userEntityUpdates.email);
             if (userWithEmail) {
-                throw new Error('User with this email already exists');
+                throw new UserAlreadyExistsError(userEntityUpdates.email);
             }
         }
 
@@ -62,7 +68,7 @@ export class UserUseCase {
     public async deleteUser(uuid: string): Promise<boolean> {
         const existingUser = await this.userRepository.findById(uuid);
         if (!existingUser) {
-            throw new Error('User not found');
+            throw new UserNotFoundError(uuid);
         }
         
         return await this.userRepository.delete(uuid);
@@ -78,11 +84,11 @@ export class UserUseCase {
     public async updateLastLogin(uuid: string): Promise<UserEntity> {
         const existingUser = await this.userRepository.findById(uuid);
         if (!existingUser) {
-            throw new Error('User not found');
+            throw new UserNotFoundError(uuid);
         }
 
         if (!existingUser.isActive) {
-            throw new Error('Cannot update login for inactive user');
+            throw new UserInactiveError();
         }
 
         // Usar el factory method para actualizar solo lastLogin
@@ -97,7 +103,7 @@ export class UserUseCase {
     public async toggleUserStatus(uuid: string): Promise<UserEntity> {
         const existingUser = await this.userRepository.findById(uuid);
         if (!existingUser) {
-            throw new Error('User not found');
+            throw new UserNotFoundError(uuid);
         }
 
         // Usar el factory method apropiado según el estado actual
@@ -114,11 +120,11 @@ export class UserUseCase {
     public async activateUser(uuid: string): Promise<UserEntity> {
         const existingUser = await this.userRepository.findById(uuid);
         if (!existingUser) {
-            throw new Error('User not found');
+            throw new UserNotFoundError(uuid);
         }
 
         if (existingUser.isActive) {
-            throw new Error('User is already active');
+            throw new InvalidUserStateError('User is already active');
         }
 
         const activatedUserValue = UserValue.activate(existingUser);
@@ -131,11 +137,11 @@ export class UserUseCase {
     public async deactivateUser(uuid: string): Promise<UserEntity> {
         const existingUser = await this.userRepository.findById(uuid);
         if (!existingUser) {
-            throw new Error('User not found');
+            throw new UserNotFoundError(uuid);
         }
 
         if (!existingUser.isActive) {
-            throw new Error('User is already inactive');
+            throw new InvalidUserStateError('User is already inactive');
         }
 
         const deactivatedUserValue = UserValue.deactivate(existingUser);

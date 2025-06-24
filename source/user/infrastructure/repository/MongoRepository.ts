@@ -2,6 +2,7 @@ import { UserRepository } from '../../domain/user-repository';
 import { UserEntity } from '../../domain/user-entity'; 
 import { UserModel } from '../model/UserSchema';
 
+
 export class MongoRepository implements UserRepository {
     private toEntity(mongoDocument: any): UserEntity {
         return {
@@ -67,9 +68,7 @@ export class MongoRepository implements UserRepository {
             { new: true, lean: true }
         );
 
-        if (!updatedUser) {
-            throw new Error('User not found');
-        }
+     
 
         return this.toEntity(updatedUser);
     }

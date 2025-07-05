@@ -16,7 +16,6 @@ export const handleExceptions = (
         'UserAlreadyExistsError': 409,
         'UserInactiveError': 400,
         'InvalidUserStateError': 400,
-        'RepositoryError': 500,
         'ValidationError': 400
     };
 
